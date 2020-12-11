@@ -1,7 +1,9 @@
 package com.app.web.user.api.v1
 
 import com.domain.user.User
+import com.domain.user.usecases.FindUserByIdUseCase
 import com.domain.user.usecases.SearchForUsersUseCase
+import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.stub
 import com.nhaarman.mockitokotlin2.whenever
 import org.junit.Before
@@ -28,6 +30,9 @@ class V1UserControllerTest {
 
     @MockBean
     private lateinit var mockSearchForUsersUseCase: SearchForUsersUseCase
+
+    @MockBean
+    private lateinit var mockFindUserByIdUseCase: FindUserByIdUseCase
 
     @Before
     fun setUp() {
@@ -66,7 +71,7 @@ class V1UserControllerTest {
 
         whenever(mockSearchForUsersUseCase.execute()).thenReturn(listOf(june, carry))
 
-        val result = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/users"))
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/users"))
             .andExpect(MockMvcResultMatchers.status().isOk)
             .andExpect(MockMvcResultMatchers.content().json(
                     """
@@ -99,5 +104,50 @@ class V1UserControllerTest {
                             ]
                         } 
                     """))
+    }
+
+    @Test
+    fun `findById should return a matching user`() {
+        val june = User(
+            id = 1,
+            name = "Fake June",
+            username = "fakeUserName",
+            email = "fake@email.com",
+            address = User.Address(
+                id = 3,
+                street = "123 Fake St.",
+                city = "Fakeville",
+                zipcode = 12345
+            ),
+            phone = "111-222-3333"
+        )
+
+        whenever(mockFindUserByIdUseCase.execute(june.id)).thenReturn(june)
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/users/${june.id}"))
+            .andExpect(MockMvcResultMatchers.status().isOk)
+            .andExpect(MockMvcResultMatchers.content().json(
+                """
+                    {
+                        "id":1,
+                        "name":"Fake June",
+                        "username":"fakeUserName",
+                        "email":"fake@email.com",
+                        "address": {
+                            "street":"123 Fake St.",
+                            "city":"Fakeville",
+                            "zipcode":12345
+                        },
+                        "phone":"111-222-3333"
+                    }
+                    """))
+    }
+
+    @Test
+    fun `findById should return a 404 status when no user is found`() {
+        whenever(mockFindUserByIdUseCase.execute(any())).thenReturn(null)
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/users/1"))
+            .andExpect(MockMvcResultMatchers.status().is4xxClientError)
     }
 }
