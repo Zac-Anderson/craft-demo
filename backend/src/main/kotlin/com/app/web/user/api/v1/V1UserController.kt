@@ -18,10 +18,10 @@ class V1UserController(
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     fun index(
-        @RequestParam(required = false) q: String?
+        @RequestParam(required = false) street: String?
     ): Page<V1UserResponse> {
         val users = searchForUsersUseCase
-            .execute()
+            .execute(street)
             .map(V1UserResponseTranslator::translate)
 
         return Page(users)

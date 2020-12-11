@@ -69,7 +69,7 @@ class V1UserControllerTest {
             phone = "444-555-6666"
         )
 
-        whenever(mockSearchForUsersUseCase.execute()).thenReturn(listOf(june, carry))
+        whenever(mockSearchForUsersUseCase.execute(null)).thenReturn(listOf(june, carry))
 
         mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/users"))
             .andExpect(MockMvcResultMatchers.status().isOk)
@@ -96,6 +96,75 @@ class V1UserControllerTest {
                                     "email":"real@email.com",
                                     "address": {
                                         "street":"456 Real St.",
+                                        "city":"Real City",
+                                        "zipcode":54321
+                                    },
+                                    "phone":"444-555-6666"
+                                }
+                            ]
+                        } 
+                    """))
+    }
+
+    @Test
+    fun `index with a street parameter should return a page of users`() {
+        val street = "123 Fake St."
+
+        val june = User(
+            id = 1,
+            name = "Fake June",
+            username = "fakeUserName",
+            email = "fake@email.com",
+            address = User.Address(
+                id = 3,
+                street = street,
+                city = "Fakeville",
+                zipcode = 12345
+            ),
+            phone = "111-222-3333"
+        )
+
+        val carry = User(
+            id = 2,
+            name = "Real Carry",
+            username = "realUserName",
+            email = "real@email.com",
+            address = User.Address(
+                id = 4,
+                street = street,
+                city = "Real City",
+                zipcode = 54321
+            ),
+            phone = "444-555-6666"
+        )
+
+        whenever(mockSearchForUsersUseCase.execute(street)).thenReturn(listOf(june, carry))
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/users?street=$street"))
+            .andExpect(MockMvcResultMatchers.status().isOk)
+            .andExpect(MockMvcResultMatchers.content().json(
+                """
+                         {
+                            "data": [
+                                {
+                                    "id":1,
+                                    "name":"Fake June",
+                                    "username":"fakeUserName",
+                                    "email":"fake@email.com",
+                                    "address": {
+                                        "street":"123 Fake St.",
+                                        "city":"Fakeville",
+                                        "zipcode":12345
+                                    },
+                                    "phone":"111-222-3333"
+                                },
+                                {
+                                    "id":2,
+                                    "name":"Real Carry",
+                                    "username":"realUserName",
+                                    "email":"real@email.com",
+                                    "address": {
+                                        "street":"123 Fake St.",
                                         "city":"Real City",
                                         "zipcode":54321
                                     },

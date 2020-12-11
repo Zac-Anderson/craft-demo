@@ -27,7 +27,7 @@ abstract class UserRepositoryContractTest {
 
         val result = subject.findAll()
 
-        assertThat(result).contains(lori,ted)
+        assertThat(result).contains(lori, ted)
     }
 
     @Test
@@ -44,5 +44,61 @@ abstract class UserRepositoryContractTest {
         val result = subject.findById(-1)
 
         assertThat(result).isNull()
+    }
+
+    @Test
+    fun `search returns users that match the street parameter`() {
+        val matchingStreet = "123 The Matching Street"
+        val nonMatchingStreet = "456 Non Matching Street"
+
+        val luke = userFactory.createUserEntity(address = userFactory.createAddressEntity(street = matchingStreet))
+        val carol = userFactory.createUserEntity(address = userFactory.createAddressEntity(street = matchingStreet))
+        val gina = userFactory.createUserEntity(address = userFactory.createAddressEntity(street = nonMatchingStreet))
+
+        val result = subject.search(matchingStreet)
+
+        assertThat(result).contains(luke, carol)
+        assertThat(result).doesNotContain(gina)
+    }
+
+    @Test
+    fun `search is case insensitive when using the street parameter`() {
+        val matchingStreet = "123 The Matching Street"
+        val alsoMatchingStreet = "123 ThE MaTcHiNg StReEt"
+
+        val luke = userFactory.createUserEntity(address = userFactory.createAddressEntity(street = matchingStreet))
+        val carol = userFactory.createUserEntity(address = userFactory.createAddressEntity(street = matchingStreet))
+        val gina = userFactory.createUserEntity(address = userFactory.createAddressEntity(street = alsoMatchingStreet))
+
+        val result = subject.search(matchingStreet)
+
+        assertThat(result).contains(luke, carol, gina)
+    }
+
+    @Test
+    fun `search returns partial matches when using the street parameter`() {
+        val matchingStreet = "Matching Street"
+        val alsoMatchingStreet = "123 ThE MaTcHiNg StReEt"
+
+        val luke = userFactory.createUserEntity(address = userFactory.createAddressEntity(street = matchingStreet))
+        val carol = userFactory.createUserEntity(address = userFactory.createAddressEntity(street = matchingStreet))
+        val gina = userFactory.createUserEntity(address = userFactory.createAddressEntity(street = alsoMatchingStreet))
+
+        val result = subject.search(matchingStreet)
+
+        assertThat(result).contains(luke, carol, gina)
+    }
+
+    @Test
+    fun `search returns an empty list when no addresses match the street`() {
+        val nonMatchingStreet = "456 Non Matching Street"
+
+        userFactory.createUserEntity(address = userFactory.createAddressEntity(street = nonMatchingStreet))
+        userFactory.createUserEntity(address = userFactory.createAddressEntity(street = nonMatchingStreet))
+        userFactory.createUserEntity(address = userFactory.createAddressEntity(street = nonMatchingStreet))
+
+        val result = subject.search("matchingStreet")
+
+        assertThat(result).isEmpty()
     }
 }
