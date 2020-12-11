@@ -1,0 +1,13 @@
+#!/bin/bash
+
+set -eux
+
+DEMO=$(cd $(dirname "$0")/.. && pwd)
+
+(
+  pushd ${DEMO}/backend
+
+#  export SPRING_PROFILES_ACTIVE=development
+
+  ./gradlew clean bootRun
+)
