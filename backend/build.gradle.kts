@@ -39,6 +39,8 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter:5.7.0")
     testImplementation("org.assertj:assertj-core:3.17.2")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0")
+    testImplementation("org.mockito:mockito-core:3.6.28")
 }
 
 tasks.withType<KotlinCompile>().configureEach {
